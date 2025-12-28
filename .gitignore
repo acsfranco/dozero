@@ -4,3 +4,5 @@
 *.out
 *.exe
 *.swp
+perceptron
+mlp
