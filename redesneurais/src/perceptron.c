@@ -58,9 +58,7 @@ float ident(float x) {
 float computout(NEURON neuron, float *x) {
   float k = 0;
   for (uint32_t i = 0; i < neuron.nconnections; i++) {
-    printf("%f\n",x[i] * neuron.weights[i]);
-
-    k += x[i] * neuron.weights[i];
+     k += x[i] * neuron.weights[i];
   }
   k += neuron.bias;
   return neuron.actfunc(k);
@@ -80,6 +78,27 @@ float computout(NEURON neuron, float *x) {
 float randomize(float min, float max) {
   float num = min + ((float)rand() / (float)RAND_MAX) * (max - min);
   return num;
+}
+
+/*
+ * Computa a função de custo MSE - Mean of Squared Error
+ *
+ * Parâmetros:
+ *   out_true - saídas das amostras de dados de treinamento
+ *   out_pred - sáidas preditas pelo modelo
+ *   samplesize - quantidade de amostras
+ *
+ * Retorno
+ *   O cálculo do custo
+ */
+
+float mse(float *out_true, float *out_pred, uint32_t samplesize) {
+  float s = 0;
+  for (uint32_t i = 0; i < samplesize; i++) {
+    s += pow(out_pred[i] - out_true[i], 2);
+  }
+  s /= samplesize;
+  return s;
 }
 
 /*
@@ -107,14 +126,35 @@ NEURON initneuron(float (*actfunc)(float x), uint32_t nconnections) {
 
 void main() {
   srand(time(NULL));
-  NEURON neuron = initneuron(ident, 4);
-  float *x = (float *) malloc(sizeof(float) * 4);
+  NEURON neuron = initneuron(ident, 1);
+  
+  float **x = (float **) malloc(sizeof(float *) * 4);
+  for (uint32_t i = 0; i < 4; i++) {
+    x[i] = (float *) malloc(sizeof(float));
+  }
+  float *out_true = (float *) malloc(sizeof(float) * 4);
+  float *out_pred = (float *) malloc(sizeof(float) * 4);
 
-  x[0] = 10;
-  x[1] = 6;
-  x[2] = -8;
-  x[3] = 5;
+  x[0][0] = 0;
+  x[1][0] = 2;
+  x[2][0] = 4;
+  x[3][0] = 6;
 
-  printf("A saída do neurônio é: %f\n", computout(neuron, x));
+  out_true[0] = 6;
+  out_true[1] = 11;
+  out_true[2] = 16;
+  out_true[3] = 21;
+  
+  neuron.weights[0] = 2.5;
+  neuron.bias = 6;
+
+  for (uint32_t i = 0; i < 4; i++) {
+    out_pred[i] = computout(neuron, x[i]);
+  }
+
+  printf("O valor de w é %f\n: ", neuron.weights[0]);
+  printf("O valor do bias é %f\n: ", neuron.bias);
+
+  printf("O custo do neurônio é: %f\n", mse(out_true, out_pred, 4));
 }
 
