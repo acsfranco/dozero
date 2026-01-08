@@ -1,6 +1,6 @@
-# Compilado
-CC = gcc
+#Compilado
 
+CC = gcc
 # Executavel
 TARGET = perceptron
 
@@ -8,12 +8,12 @@ TARGET = perceptron
 SRCS = perceptron.c utils.c netmath.c neuralnet.c neuron.c
 
 # Arquivos OBSs
-OBJS = $(SRCS: .c=.o)
+OBJS = $(SRCS:.c=.o)
 
 # Regra padrão
-all: $(TARGET)
+all:$(TARGET)
 
-$(TARGET): $(OBJS)
+$(TARGET):$(OBJS)
 	$(CC) $(OBJS) -lm -o $(TARGET)
 
 %.o: %.c
