@@ -3,17 +3,31 @@
 #include "netmath.h"
 
 /*
- * Calcula a função de custo Identidade.
+ * Função de ativação Identidade.
  *
  * Parâmetros:
- *   x - Um valor escalar
+ *   x - Entrada da função
  *
  * Retorno:
- *   valor do custo da rede neural
+ *   retorna x
  */
 
 float ident(float x) {
   return x;
+}
+
+/*
+ * Função de ativação Sigmoid.
+ *
+ * Parâmetros:
+ *   x - Entrada da função
+ *
+ * Retorno:
+ *   cálculo da sigmoid
+ */
+
+float sig(float x) {
+  return 1 / (1 + exp(-x));
 }
 
 /*
