@@ -27,7 +27,11 @@ float ident(float x) {
  */
 
 float sig(float x) {
-  return 1 / (1 + exp(-x));
+  return 1.0 / (1.0 + exp(-x));
+}
+
+float relu(float x) {
+  return x > 0 ? x : 0.001 * x;
 }
 
 /*
@@ -42,12 +46,29 @@ float sig(float x) {
  *   O cálculo do custo
  */
 
-float mse(float *out_true, float *out_pred, uint32_t samplesize) {
+float mse(float **out_true, float **out_pred, uint32_t samplesize, uint32_t nout) {
   float s = 0;
   for (uint32_t i = 0; i < samplesize; i++) {
-    s += pow(out_pred[i] - out_true[i], 2);
+    for (uint32_t k = 0; k < nout; k++) {
+      s += pow(out_pred[i][k] - out_true[i][k], 2);
+    }
   }
-  s /= samplesize;
+  s /= (float)(samplesize * nout);
   return s;
 }
 
+float normalize(float input, float **x, uint32_t inpindex, uint32_t samplesize) {
+  float max = x[0][inpindex], min = x[0][inpindex];
+
+  for (uint32_t i = 1; i < samplesize; i++) {
+    if (x[i][inpindex] < min) {
+      min = x[i][inpindex];
+    }
+    
+    if (x[i][inpindex] > max) {
+      max = x[i][inpindex];
+    }
+  }
+
+  return (input - min) / (max - min);
+}

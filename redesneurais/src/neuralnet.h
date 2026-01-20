@@ -1,5 +1,14 @@
+#include "neuron.h"
+
 #ifndef NEURALNET_H
 #define NEURALNET_H
+
+typedef struct {
+  NEURON *outneurons;
+  uint32_t nout;
+  float (*intactfunc)(float);
+  float (*outactfunc)(float);
+} NET;
 
 /*
  * Computa o custo da rede neural
@@ -12,7 +21,9 @@
  *   samplesize - quantidade de amostras
  */
 
-float computcost(NEURON neuron, float **x, float *y, float (*cost)(), uint32_t samplesize);
+float computcost(NET net, float **x, float **y, float (*cost)(), uint32_t samplesize);
+
+void updateparams(NET *net, NEURON *neuron, float (*cost)(), float **x, float **y, uint32_t samplesize);
 
 /*
  * Calcula o gradiente pelo método da derivada numérica
@@ -26,7 +37,7 @@ float computcost(NEURON neuron, float **x, float *y, float (*cost)(), uint32_t s
  *   samplesize - tamanho da amostra
  */
 
-float computgradient(NEURON *neuron, float (*cost)(), float **x, float *y, float *param, uint32_t samplesize);
+float computgradient(NET *net, float (*cost)(), float **x, float **y, float *param, uint32_t samplesize);
 
 /*
  * Função de treinamento da rede neural
@@ -39,6 +50,10 @@ float computgradient(NEURON *neuron, float (*cost)(), float **x, float *y, float
  * samplesize - quantidade de amostras
  */
 
-float train(NEURON *neuron, float (*cost)(), float **x, float *y, float samplesize);
+float *feedforward(NET net, float *x);
+
+NET initnet(uint32_t *layers, uint32_t nlayers, float (*intactfunc)(float), float (*outactfunc)(float));
+
+float train(NET *net, float (*cost)(), float **x, float **y, float samplesize);
 
 #endif

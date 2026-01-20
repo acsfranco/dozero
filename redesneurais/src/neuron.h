@@ -10,6 +10,7 @@ typedef struct Neuron NEURON;
 
 struct Neuron {
   float *weights;
+  NEURON *conneurons;
   uint32_t nconnections;
   float bias;
   float (*actfunc)(float x);

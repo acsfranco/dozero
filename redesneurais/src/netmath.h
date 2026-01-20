@@ -26,7 +26,7 @@ float ident(float x);
  */
 
 float sig(float x);
-
+float relu(float x);
 /*
  * Computa a função de custo MSE - Mean of Squared Error
  *
@@ -39,6 +39,6 @@ float sig(float x);
  *   O cálculo do custo
  */
 
-float mse(float *out_true, float *out_pred, uint32_t samplesize);
-
+float mse(float **out_true, float **out_pred, uint32_t samplesize, uint32_t nout);
+float normalize(float input, float **x, uint32_t inpindex, uint32_t samplesize);
 #endif
