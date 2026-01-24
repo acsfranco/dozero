@@ -1,8 +1,0 @@
-*.log
-*.tmp
-*.o
-*.out
-*.exe
-*.swp
-perceptron
-mlp
