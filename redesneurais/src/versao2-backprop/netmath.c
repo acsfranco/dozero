@@ -19,7 +19,6 @@ float ident(float x) {
 float derivident(float x) {
   return 1;
 }
-
 /*
  * Função de ativação Sigmoid.
  *
@@ -34,16 +33,16 @@ float sig(float x) {
   return 1.0 / (1.0 + exp(-x));
 }
 
-float derivsig(float x) { // x deve ser a
-  return x * (1.0f - x); 
+float derivsig(float x) {
+  return x * (1 - x);
 }
 
 float relu(float x) {
-  return x > 0.0f ? x : 0.0f;
+  return x > 0 ? x : 0.0f;
 }
 
-float derivrelu(float x) { // x deve ser z
-  return x > 0.0f ? 1.0f : 0.0f;
+float derivrelu(float x) {
+  return x > 0 ? 1.0f : 0.0f;
 }
 
 /*
@@ -65,8 +64,7 @@ float mse(float **out_true, float **out_pred, uint32_t samplesize, uint32_t nout
       s += pow(out_pred[i][k] - out_true[i][k], 2);
     }
   }
-  //s /= (float)(samplesize * nout);
-  s /= (float)samplesize;
+  s /= (float)(samplesize * nout);
   return s;
 }
 

@@ -1,23 +1,22 @@
 #include<stdint.h>
-#include "neuron.h"
 
 #ifndef NETMATH_H
 #define NETMATH_H
 
-/*
- * Função de ativação Identidade.
- *
- * Parâmetros:
- *   x - Entrada da função
- *
- * Retorno:
- *   retorna x
- */
+  /*
+   * Função de ativação Identidade.
+   *
+   * Parâmetros:
+   *   x - Entrada da função
+   *
+   * Retorno:
+   *   retorna x
+   */
 
-float ident(float x);
-float derivident(float x);
-/*
- * Função de ativação Sigmoid.
+  float ident(float x);
+  float derivident(float x);
+  /*
+   * Função de ativação Sigmoid.
  *
  * Parâmetros:
  *   x - Entrada da função

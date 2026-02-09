@@ -3,9 +3,6 @@
 #ifndef NEURALNET_H
 #define NEURALNET_H
 
-#define BATCH 64
-#define EPOCHS 200
-
 typedef struct {
   NEURON *outneurons;
   uint32_t nout;
@@ -31,9 +28,10 @@ typedef struct {
 
 float computcost(NET net, float **x, float **y, float (*cost)(), uint32_t samplesize);
 
-void updateparams(NEURON *neurons, uint32_t nneurons, uint32_t samplesize);
+void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, float *y, BACKPARAMS *params, uint32_t nparams);
 
-void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, float *y, BACKPARAMS *params, float nparams);
+void updateparams(NEURON *neuron, uint32_t nneurons, uint32_t samplesize);
+//void updateparams(NET *net, NEURON *neuron, float (*cost)(), float **x, float **y, uint32_t samplesize);
 
 /*
  * Função de treinamento da rede neural
@@ -49,6 +47,7 @@ void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, floa
 float *feedforward(NET net, float *x);
 
 void reset_forward(NEURON *neurons, uint32_t nneurons);
+
 void reset_grad(NEURON *neurons, uint32_t nneurons);
 
 NET initnet(uint32_t *layers, uint32_t nlayers, ACTFUNC intactfunc, ACTFUNC outactfunc);

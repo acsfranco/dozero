@@ -16,15 +16,14 @@
  *   Valor de saída do neurônio
  */
 
-float computout(NEURON *neuron, float *x) { /*********************************/
+float computout(NEURON *neuron, float *x) {
   float k = 0;
   if (neuron->conneurons != NULL) {
     for (uint32_t i = 0; i < neuron->nconnections; i++) {
       NEURON *cneuron = &neuron->conneurons[i];
-      float c = !cneuron->valid ? computout(cneuron, x) : cneuron->a;
-      k += c * neuron->weights[i];
-      cneuron->a = c;
-      cneuron->valid = 1;
+      float a = computout(cneuron, x);
+      cneuron->a = a;
+      k += a * neuron->weights[i];
     } 
   } else {  
     for (uint32_t i = 0; i < neuron->nconnections; i++) {
@@ -32,6 +31,6 @@ float computout(NEURON *neuron, float *x) { /*********************************/
     }
   }
   k += neuron->bias;
-  neuron->z = k;
+  neuron->z = k; 
   return neuron->actfunc.func(k);
 }

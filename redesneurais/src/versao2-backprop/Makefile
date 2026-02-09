@@ -2,10 +2,10 @@
 
 CC = gcc
 # Executavel
-TARGET = perceptron
+TARGET = mlp
 
 # Arquivo fontes
-SRCS = perceptron.c utils.c netmath.c neuralnet.c neuron.c mnist/mnist.c
+SRCS = mlp.c utils.c netmath.c neuralnet.c neuron.c mnist/mnist.c
 
 # Arquivos OBSs
 OBJS = $(SRCS:.c=.o)

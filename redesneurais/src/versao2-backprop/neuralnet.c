@@ -5,8 +5,7 @@
 #include "utils.h"
 #include <string.h>
 #include <stdio.h>
-
-#define LR 0.05
+#define LR 0.1
 
 /*
  * Computa o custo da rede neural
@@ -37,60 +36,60 @@ float computcost(NET net, float **x, float **y, float (*cost)(), uint32_t sample
   return c;
 }
 
-void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, float *y, BACKPARAMS *params, float nparams) {  
+void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, float *y, BACKPARAMS *params, uint32_t nparams) {  
   float *y_hat = NULL;
-
-  //if (params == NULL)
-  //  y_hat = feedforward(net, x);
+  if (params == NULL) { // Calculando as predições da rede
+    y_hat = feedforward(net, x);
+  }
 
   BACKPARAMS *backparams = (BACKPARAMS *)malloc(sizeof(BACKPARAMS) * nneurons);
-  for (uint32_t i = 0; i < nneurons; i++) { // Calculando os deltas de saída
+  for (uint32_t i = 0; i < nneurons; i++) {
     NEURON *neuron = &neurons[i];
-    ACTFUNC actfunc = neuron->actfunc;
-    neuron->delta = actfunc.derinptype ? actfunc.deriv(neuron->z) : actfunc.deriv(neuron->a);
-    
-    if (params == NULL) { // Caso seja o calculo do delta de um neurônio de saída
-      //float error = y_hat[i] - y[i];
-      float error = neuron->a - y[i];
-      neuron->delta *= error; // Erro x Derivada da função de ativação
-    } else { // Caso seja o cálculo de um neurônio intermediário
-      float delta = 0;
+    float deriv = neuron->actfunc.derinptype ? neuron->actfunc.deriv(neuron->z) : neuron->actfunc.deriv(neuron->a);    
+    if (params == NULL) { // Calcular os deltas e os gradientes da camada de saída
+      float error = (y_hat[i] - y[i]);
+      neuron->delta = error * deriv;
+    } else {
       for (uint32_t k = 0; k < nparams; k++) {
-        delta += params[k].weights[i] * params[k].delta; // Somatório dos pesos multiplicados pelos deltas dos neurônios
-                                                          // da camada seguinte
+        neuron->delta += params[k].weights[i] * params[k].delta;
       }
-      neuron->delta *= delta;
+      neuron->delta *= deriv;
     }
-    
+    // O cálculo dos gradientes dos pesos e dos bias
     for (uint32_t k = 0; k < neuron->nconnections; k++) {
       float a = neuron->conneurons != NULL ? neuron->conneurons[k].a : x[k];
-      neuron->grad_w[k] += neuron->delta * a; // Acumulando o gradiente para depois calcular a média
+      neuron->grad_w[k] += a * neuron->delta;
     }
-    neuron->grad_b += neuron->delta; // Como entrada de b é sempre um, seu gradiente é o delta de seu neurônio
-    backparams[i].weights = neuron->weights; // Propagar os pesos para o cálculo dos deltas da camada anterior
-    backparams[i].delta = neuron->delta; // Propagar os deltas para o cálculo dos deltas da camada anterior
+    neuron->grad_b += neuron->delta;
+    backparams[i].weights = neuron->weights;
+    backparams[i].delta = neuron->delta;
   }
-  
+  free(params);
   free(y_hat);
-  //free(params);
-
-  if (neurons[0].conneurons != NULL) // Fazendo a atualização dos deltas e gradientes da camada anterior
-                                     // Basta verificar se o primeiro neurônio da camada atual tem outros conectados
-                                     // para saber se existe outra camada de neurônios anterior.
+  if (neurons[0].conneurons != NULL) {
     updatedeltagrad(net, neurons[0].conneurons, neurons[0].nconnections, x, y, backparams, nneurons);
+  }
 }
+
+/*
+ * Calcula o gradiente pelo método da derivada numérica
+ *
+ * Parâmetros:
+ *   neuron - endereço do neurônio com o parâmetro utilizado no cálculo
+ *   cost - função de custo
+ *   x - entradas das amostras
+ *   y - saídas das amostras
+ *   param - endereço do parâmetro utilizado no cálcuo
+ *   samplesize - tamanho da amostra
+ */
 
 float *feedforward(NET net, float *x) {
   float *out = (float *)malloc(sizeof(float) * net.nout);
 
   for (uint32_t i = 0; i < net.nout; i++) {
-    if (!net.outneurons[i].valid) {
-      out[i] = computout(&net.outneurons[i], x);
-      net.outneurons[i].a = out[i];
-      net.outneurons[i].valid = 1;
-    } else {
-      out[i] = net.outneurons[i].a;
-    }
+    NEURON *neuron = &net.outneurons[i];
+    out[i] = computout(neuron, x);
+    neuron->a = out[i];   
   }
 
   return out;
@@ -102,11 +101,10 @@ void reset_forward(NEURON *neurons, uint32_t nneurons) {
     neuron->a = 0;
     neuron->z = 0;
     neuron->delta = 0;
-    neuron->valid = 0;
   }
-  
-  if (neurons[0].conneurons != NULL)
-    reset_forward(neurons[0].conneurons, neurons[0].nconnections);
+  if (neurons[0].conneurons != NULL) {
+    reset_forward(neurons[0].conneurons,  neurons[0].nconnections);
+  }
 }
 
 void reset_grad(NEURON *neurons, uint32_t nneurons) {
@@ -117,9 +115,9 @@ void reset_grad(NEURON *neurons, uint32_t nneurons) {
     }
     neuron->grad_b = 0;
   }
-  
-  if (neurons[0].conneurons != NULL)
-    reset_grad(neurons[0].conneurons, neurons[0].nconnections);
+  if (neurons[0].conneurons != NULL) {
+    reset_grad(neurons[0].conneurons,  neurons[0].nconnections);
+  }
 }
 
 /*
@@ -148,14 +146,14 @@ NET initnet(uint32_t *layers, uint32_t nlayers, ACTFUNC intactfunc, ACTFUNC outa
       neuron.weights = (float *)malloc(sizeof(float) * nconnections);
       neuron.grad_w = (float *)malloc(sizeof(float) * nconnections);
       for (int n = 0; n < nconnections; n++) {
-        neuron.weights[n] = randomize(-0.1f, 0.1f);
+        neuron.weights[n] = randomize(-1.0,1.0);
       }
-      neuron.bias = randomize(-0.1f, 0.1f);
+      neuron.bias = 0.1; //randomize(-1, 1);
       neuron.actfunc = k < nlayers - 1 ? intactfunc : outactfunc;
       currlayer[i] = neuron;
     }
     prevlayer = (NEURON *)malloc(sizeof(NEURON) * nneurons);
-    memcpy(prevlayer, currlayer, sizeof(NEURON) * nneurons);
+    memcpy(prevlayer, currlayer, sizeof(NEURON) * nneurons);    
   }
   net.outneurons = prevlayer;
   reset_forward(net.outneurons, net.nout);
@@ -171,8 +169,9 @@ void updateparams(NEURON *neurons, uint32_t nneurons, uint32_t samplesize) {
     }
     neuron->bias -= LR * (neuron->grad_b / samplesize);
   }
-  if (neurons[0].conneurons != NULL)
+  if (neurons[0].conneurons != NULL) {
     updateparams(neurons[0].conneurons, neurons[0].nconnections, samplesize);
+  }
 }
 
 /*
@@ -190,7 +189,6 @@ float train(NET net, float **x, float **y, float samplesize) {
   reset_grad(net.outneurons, net.nout);
   for (uint32_t i = 0; i < samplesize; i++) {
     reset_forward(net.outneurons, net.nout);
-    feedforward(net, x[i]); // TIRAR SE NÃO DER CERTO
     updatedeltagrad(net, net.outneurons, net.nout, x[i], y[i], NULL, 0);
   }
   updateparams(net.outneurons, net.nout, samplesize);

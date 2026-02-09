@@ -25,6 +25,5 @@ float randomize(float min, float max);
  */
 
 float ** mallocmatrix(uint32_t linhas, uint32_t colunas);
-void shuffle(int *array, int n);
 
 #endif

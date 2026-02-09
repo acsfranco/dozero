@@ -1,24 +1,30 @@
-#ifndef MNIST_H
-#define MNIST_H
 #include<stdint.h>
 
-typedef struct {
-  uint32_t num_images;
-  uint32_t rows;
-  uint32_t cols;
-  uint8_t *data;
-} MNIST_Images;
+#ifndef MNIST_H
+#define MNIST_H
 
-typedef struct {
-  uint32_t num_labels;
+struct mnist_images {
+  uint32_t magicnumber;
+  uint32_t samplesize;
+  uint32_t xsize;
+  uint32_t ysize;
+  uint8_t *images;
+};
+
+typedef struct mnist_images MNIST_Images;
+
+struct mnist_labels {
+  uint32_t magicnumber;
+  uint32_t samplesize;
   uint8_t *labels;
-} MNIST_Labels;
+};
 
-uint32_t read_int_big_endian(FILE *f);
+typedef struct mnist_labels MNIST_Labels;
+uint32_t convertBigEndianToInt(uint8_t bytes[4]);
 MNIST_Images load_mnist_images(const char *filename);
 MNIST_Labels load_mnist_labels(const char *filename);
-float **convertmnisttodatainp(MNIST_Images images);
-float **convertmnisttodataout(MNIST_Labels labels);
-uint8_t **convertmnisttoimage(MNIST_Images images, uint32_t imageindex);
+void print_MNIST_image(MNIST_Images images, uint32_t index);
+float **convertmnistimagestoinp(MNIST_Images images);
+float **convertmnistlabelstoout(MNIST_Labels labels);
 
 #endif

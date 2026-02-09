@@ -6,19 +6,14 @@
  * Estrutura do neurônio
  * ======================= */
 
+typedef struct Neuron NEURON;
+
 typedef struct {
   float (*func)(float);
   float (*deriv)(float);
-  uint8_t derinptype; // 0 - x 1 - y
-                      // Exemplo: a derivada da sigmoid é
-                      // sig(x) * (1 - sig(x))
-                      // Só que sig(x) já foi calculado e
-                      // é a saída da função de ativação.
-                      // Logo, basta eu passar a saída da
-                      // função de ativação e não a entrada.
+  uint8_t derinptype; // 0 - z 1 - a;
 } ACTFUNC;
 
-typedef struct Neuron NEURON;
 
 struct Neuron {
   float *weights;
@@ -28,9 +23,8 @@ struct Neuron {
   float bias;
   float grad_b;
   float delta;
-  float z;
   float a;
-  uint8_t valid;
+  float z;
   ACTFUNC actfunc;
 };
 
