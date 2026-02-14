@@ -3,6 +3,9 @@
 #ifndef NEURALNET_H
 #define NEURALNET_H
 
+#define EPOCHS 20
+#define BATCH 64 
+
 typedef struct {
   NEURON *outneurons;
   uint32_t nout;

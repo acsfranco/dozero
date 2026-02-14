@@ -35,3 +35,12 @@ float ** mallocmatrix(uint32_t linhas, uint32_t colunas) {
   
   return x;
 }
+
+void shuffle(uint32_t *index, uint32_t size) {
+  for (uint32_t i = size - 1; i > 0; i--) {
+    uint32_t j = rand() % (i + 1);
+    uint32_t tmp = index[i];
+    index[i] = index[j];
+    index[j] = tmp;
+  }
+}

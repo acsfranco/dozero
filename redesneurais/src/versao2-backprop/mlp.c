@@ -1,11 +1,7 @@
-/* perceptron.c
+/* mlp.c
  *
- * Implementação de um perceptron,
+ * Implementação de uma mlp,
  * sem uso de bibliotecas externas.
- *
- * Este arquivo contém:
- * - definição da estrutura do perceptron
- * - função de custo e computação do neurônio
  *
  * Objetivo educacional: mostrar como tudo funciona "por baixo".
  */
@@ -41,58 +37,82 @@ void showweights(NEURON *neurons, uint32_t nneurons) {
 
 void main() {
   srand(time(NULL));
-  uint32_t layers[] = {2, 2, 1};
+  uint32_t layers[] = {784, 64, 10};
   ACTFUNC actsig = {sig, derivsig, 0};
   ACTFUNC actident = {ident, derivident, 1};
-  NET net = initnet(layers, 3, actsig, actident);
+  NET net = initnet(layers, 3, actsig, actsig);
   
-  float **out_true = mallocmatrix(6,1);
-  float **x = mallocmatrix(6,2);
+  MNIST_Images images;
+  MNIST_Labels labels;
+
+  images = load_mnist_images("mnist/train-images.idx3-ubyte");
+  labels = load_mnist_labels("mnist/train-labels.idx1-ubyte");
+
+  float **x = convertmnistimagestoinp(images);
+  float **y = convertmnistlabelstoout(labels);
+
+  float *y_hat = (float *) malloc(sizeof(float) * net.nout);
+  float **xn = mallocmatrix(images.samplesize, 784);
+
+  for (uint32_t i = 0; i < images.samplesize; i++) {
+    for (uint32_t k = 0; k < 784; k++) {
+      xn[i][k] = x[i][k] / 255;
+    }
+  }
+  
+  float **xb = mallocmatrix(64, 784);
+  float **yb = mallocmatrix(64, 10);
+  uint32_t *index = (uint32_t *)malloc(sizeof(uint32_t) * images.samplesize);
+  for (uint32_t k = 0; k < images.samplesize; k++) {
+    index[k] = k;
+  } 
+ 
+  for (uint32_t e = 0; e < EPOCHS; e++) {
+    shuffle(index, images.samplesize);
+    for (uint32_t s = 0; s < images.samplesize / BATCH; s++) {
+      for (uint32_t b = 0; b < BATCH; b++) {
+        xb[b] = xn[index[s * BATCH + b]];
+        yb[b] = y[index[s * BATCH + b]];    
+      }
+      train(net, xb, yb, BATCH);
+      if (s == 0) {
+        float c = computcost(net, xb, yb, mse, BATCH);
+        printf("EPOCA: %d custo: %f\n", e, c);
+      }
+    }
+  }
+
+  // Teste
+
+  uint32_t hits = 0;
+
+  images = load_mnist_images("mnist/t10k-images.idx3-ubyte");
+  labels = load_mnist_labels("mnist/t10k-labels.idx1-ubyte");
+
+  x = convertmnistimagestoinp(images);
+  y = convertmnistlabelstoout(labels);
+
+  for (uint32_t i = 0; i < images.samplesize; i++) {
+    for (uint32_t k = 0; k < 784; k++) {
+      xn[i][k] = x[i][k] / 255;
+    }
+  }
+  
+  for (uint32_t i = 0; i < images.samplesize; i++) {
+    y_hat = feedforward(net, xn[i]);
     
-  x[0][0] = 30;
-  x[1][0] = 60;
-  x[2][0] = 90;
-  x[3][0] = 40;
-  x[4][0] = 70;
-  x[5][0] = 100;
-  
-  x[0][1] = 80;
-  x[1][1] = 50;
-  x[2][1] = 70;
-  x[3][1] = 30;
-  x[4][1] = 40;
-  x[5][1] = 90;
+    float max_prob = y_hat[0];
+    uint8_t label_pred = 0;
 
-  out_true[0][0] = 9.5;
-  out_true[1][0] = 5.2;
-  out_true[2][0] = 7.8;
-  out_true[3][0] = 6;
-  out_true[4][0] = 5.5;
-  out_true[5][0] = 10.2;
-
-  float *out_pred = (float *)malloc(sizeof(float) * net.nout);
-  float **xn = mallocmatrix(6,2);
-
-  for (uint32_t i = 0; i < 6; i++) {
-    xn[i][0] = normalize(x[i][0], x, 0, 6);
-    xn[i][1] = normalize(x[i][1], x, 1, 6);
-  }
-  
-  for (uint32_t i = 0; i < 6; i++) {
-    out_pred = feedforward(net, xn[i]);
-    printf("Entradas %f %f - Saida %f\n", x[i][0], x[i][1],  out_pred[0]);
-  }
-
-  for (int k = 0; k < 50000; k++) {
-    train(net, xn, out_true, 6); 
-  }
-  
-  printf("\n\nDepois do treinamento\n\n");
-  printf("Pesos e bias treinados\n");
-  showweights(net.outneurons, net.nout);
-
-  for (uint32_t i = 0; i < 6; i++) {
-    out_pred = feedforward(net, xn[i]);
-    printf("Entradas %f %f - Saida %f\n", x[i][0], x[i][1], out_pred[0]);
+    for (uint32_t k = 1; k < net.nout; k++) {
+      if (y_hat[k] > max_prob) {
+        max_prob = y_hat[k];
+        label_pred = k;
+      }
+    }
+    if (labels.labels[i] == label_pred) {
+      hits++;
+    }
+    printf("Digito predito: %d Digito correto: %d Percentual de acerto: %.2f\n", label_pred, labels.labels[i], ((float) hits / (float)(i + 1)) * 100.0f); 
   }
 }

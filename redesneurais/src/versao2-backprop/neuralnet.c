@@ -5,7 +5,7 @@
 #include "utils.h"
 #include <string.h>
 #include <stdio.h>
-#define LR 0.1
+#define LR 0.05
 
 /*
  * Computa o custo da rede neural
@@ -50,6 +50,7 @@ void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, floa
       float error = (y_hat[i] - y[i]);
       neuron->delta = error * deriv;
     } else {
+      neuron->delta = 0; ///////////////////////// MUDEI AQUI
       for (uint32_t k = 0; k < nparams; k++) {
         neuron->delta += params[k].weights[i] * params[k].delta;
       }
@@ -103,7 +104,7 @@ void reset_forward(NEURON *neurons, uint32_t nneurons) {
     neuron->delta = 0;
   }
   if (neurons[0].conneurons != NULL) {
-    reset_forward(neurons[0].conneurons,  neurons[0].nconnections);
+    reset_forward(neurons[0].conneurons, neurons[0].nconnections);
   }
 }
 
@@ -146,9 +147,9 @@ NET initnet(uint32_t *layers, uint32_t nlayers, ACTFUNC intactfunc, ACTFUNC outa
       neuron.weights = (float *)malloc(sizeof(float) * nconnections);
       neuron.grad_w = (float *)malloc(sizeof(float) * nconnections);
       for (int n = 0; n < nconnections; n++) {
-        neuron.weights[n] = randomize(-1.0,1.0);
+        neuron.weights[n] = randomize(-0.1f, 0.1f);
       }
-      neuron.bias = 0.1; //randomize(-1, 1);
+      neuron.bias = randomize(-0.1f, 0.1f);
       neuron.actfunc = k < nlayers - 1 ? intactfunc : outactfunc;
       currlayer[i] = neuron;
     }
