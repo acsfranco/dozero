@@ -40,6 +40,56 @@ void printtext(SDL_Renderer *renderer, uint16_t x, uint16_t y, const char *text,
   TTF_CloseFont(font);
 }
 
+void createbutton(SDL_Renderer *renderer, SDL_Rect rect, SDL_Color bgcolor, SDL_Color txtcolor, const char *text) {
+  SDL_SetRenderDrawColor(renderer, bgcolor.r, bgcolor.g, bgcolor.b, 255);
+  SDL_RenderFillRect(renderer, &rect);
+  printtext(renderer, rect.x + (rect.w / 2), rect.y + (rect.h / 2), text, txtcolor, 1, 1, 36);
+}
+
+void hbar(SDL_Renderer *renderer, uint16_t x, uint16_t y, float percent, SDL_Color color) {
+  SDL_Rect frectc = {x + 1, y + 1, 298, 30};
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  SDL_RenderFillRect(renderer, &frectc);
+
+  SDL_Rect rect = {x, y, 300, 32};
+  SDL_SetRenderDrawColor(renderer, 140, 140, 140, 255);
+  SDL_RenderDrawRect(renderer, &rect);
+
+  SDL_Rect frect = {x + 1, y + 1, 298.0f * percent, 30};
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+  SDL_RenderFillRect(renderer, &frect);
+  char buffer[10];
+  sprintf(buffer, "%.0f%%", percent * 100);
+  printtext(renderer, x + 150, y + 16, buffer, white, 1, 1, 26);
+}
+
+void showresult(SDL_Renderer *renderer, float percents[10]) {
+  float highest = percents[0];
+  uint8_t hindex = 0;
+
+  for (uint8_t i = 0; i < 10; i++) {
+    if (percents[i] > highest) {
+      highest = percents[i];
+      hindex = i;
+    }
+  }
+
+  char buffer[10];
+  uint16_t k = 160;
+
+  for (uint8_t i = 0; i < 10; i++) {
+    sprintf(buffer, "%d -", i);
+    printtext(renderer, 400, k, buffer, (hindex == i) ? cyan : yellow, 0, 0, 36);
+    k += 40;
+  }
+  
+  k = 167;
+  for (uint8_t i = 0; i < 10; i++) {
+    hbar(renderer, 460, k, percents[i], blue);
+    k += 40;
+  }
+}
+
 void main() {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Window *win = SDL_CreateWindow(
@@ -58,7 +108,13 @@ void main() {
   printtext(renderer, 400, 20, "-- Do Zero --", white, 1, 0, 36);
   printtext(renderer, 400, 80, "Reconhecimento de digitos manuscritos", white, 1, 0, 36);
   printtext(renderer, 180, 130, "Desenhe seu digito aqui", white, 1, 0, 22);
-
+  SDL_Rect rect_c = {39, 460, 282, 60};
+  SDL_Rect rect_r = {39, 530, 282, 60};
+  createbutton(renderer, rect_c, green, black, "Limpar");
+  createbutton(renderer, rect_r, blue, white, "Reconhecer");
+  float percents[] = {0.1, 0.3, 0.2, 0.8, 0.4, 0.1, 0.5, 0.4, 0.3, 0.1};
+  showresult(renderer, percents);
+  
   uint8_t running = 1;
   while (running) {
     while (SDL_PollEvent(&e)) {
