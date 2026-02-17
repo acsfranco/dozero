@@ -14,6 +14,8 @@ SDL_Color cyan = {0, 255, 255, 255};
 SDL_Color blue = {0, 0, 255, 255};
 SDL_Color green = {0, 255, 0, 255};
 
+float input[784];
+
 void drawPainel(SDL_Renderer *renderer) {
   SDL_Rect rect = {39, 159, 282, 282};
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -90,6 +92,37 @@ void showresult(SDL_Renderer *renderer, float percents[10]) {
   }
 }
 
+uint8_t insideRegion(SDL_Rect rect, uint16_t x, uint16_t y) {
+  return x >= rect.x && y >= rect.y && x <= rect.x + rect.w && y <= rect.y + rect.h;
+}
+
+void resetInput() {
+  for (uint16_t i = 0; i < 784; i++)
+    input[i] = 0;
+}
+
+void cleanButtonClickHandle(SDL_Event e, SDL_Renderer *renderer) {
+  drawPainel(renderer);
+  resetInput();
+}
+
+void recognizeButtonClickHandle(SDL_Event e) {
+  printf("Em construção!!!\n");
+}
+
+void setInput(uint16_t x, uint16_t y) {
+  input[y * 28 + x] = 1.0f;
+}
+
+void painelMouseMotionHandler(SDL_Renderer *renderer, uint16_t mx, uint16_t my, uint8_t drawing) {
+  if (drawing) {
+    SDL_Rect rect = {(mx / 10) * 10, (my / 10) * 10, 10, 10};
+    SDL_SetRenderDrawColor(renderer, cyan.r, cyan.g, cyan.b, 255);
+    SDL_RenderFillRect(renderer, &rect);
+    setInput((mx - 40.0f) / 10.0f, (my - 160.0f) / 10);
+  }
+}
+
 void main() {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Window *win = SDL_CreateWindow(
@@ -104,6 +137,7 @@ void main() {
   SDL_Renderer *renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
   SDL_Event e;
   
+  resetInput();
   drawPainel(renderer);
   printtext(renderer, 400, 20, "-- Do Zero --", white, 1, 0, 36);
   printtext(renderer, 400, 80, "Reconhecimento de digitos manuscritos", white, 1, 0, 36);
@@ -116,12 +150,30 @@ void main() {
   showresult(renderer, percents);
   
   uint8_t running = 1;
+  uint8_t drawing = 0;
+
   while (running) {
     while (SDL_PollEvent(&e)) {
       switch(e.type) {
         case SDL_QUIT:
           running = 0;
           break;
+        case SDL_MOUSEBUTTONDOWN:
+          drawing = 1;
+          if (insideRegion(rect_c, e.button.x, e.button.y)) {
+            cleanButtonClickHandle(e, renderer);
+          } else if (insideRegion(rect_r, e.button.x, e.button.y)) {
+            recognizeButtonClickHandle(e);
+          }
+          break;
+        case SDL_MOUSEBUTTONUP:
+          drawing = 0;
+          break;
+        case SDL_MOUSEMOTION:
+          SDL_Rect rect = {40, 160, 279, 279};
+          if (insideRegion(rect, e.motion.x, e.motion.y)) {
+            painelMouseMotionHandler(renderer, e.motion.x, e.motion.y, drawing);
+          }
       }
 
     }
