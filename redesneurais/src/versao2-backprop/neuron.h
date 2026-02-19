@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #ifndef NEURON_H
 #define NEURON_H
 
@@ -38,6 +39,9 @@ struct Neuron {
  * Retorno:
  *   Valor de saída do neurônio
  */
+void saveweights(NEURON * neurons, uint32_t nneurons, FILE *f, const char *filename);
+
+void loadweights(NEURON * neurons, uint32_t nneurons, FILE *f, const char *filename);
 
 float computout(NEURON *neuron, float *x);
 #endif

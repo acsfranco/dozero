@@ -34,3 +34,49 @@ float computout(NEURON *neuron, float *x) {
   neuron->z = k; 
   return neuron->actfunc.func(k);
 }
+
+void saveweights(NEURON * neurons, uint32_t nneurons, FILE *f, const char *filename) {
+  uint8_t open = 0;
+  if (f == NULL) {
+    f = fopen(filename, "wb");
+    open = 1;
+  }
+  if (neurons[0].conneurons != NULL) {
+    saveweights(neurons[0].conneurons, neurons[0].nconnections, f, "");
+  }
+
+  for (uint32_t i = 0; i < nneurons; i++) {
+    NEURON *neuron = &neurons[i];
+    for (uint32_t j = 0; j < neuron->nconnections; j++) {
+      fwrite(&neuron->weights[j], 4, 1, f);
+    }
+    fwrite(&neuron->bias, 4, 1, f);
+  }
+
+  if (open) {
+    fclose(f);
+  }
+}
+
+void loadweights(NEURON * neurons, uint32_t nneurons, FILE *f, const char *filename) {
+  uint8_t open = 0;
+  if (f == NULL) {
+    f = fopen(filename, "rb");
+    open = 1;
+  }
+  if (neurons[0].conneurons != NULL) {
+    loadweights(neurons[0].conneurons, neurons[0].nconnections, f, "");
+  }
+
+  for (uint32_t i = 0; i < nneurons; i++) {
+    NEURON *neuron = &neurons[i];
+    for (uint32_t j = 0; j < neuron->nconnections; j++) {
+      fread(&neuron->weights[j], 4, 1, f);
+    }
+    fread(&neuron->bias, 4, 1, f);
+  }
+
+  if (open) {
+    fclose(f);
+  }
+}

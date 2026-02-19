@@ -96,34 +96,100 @@ uint8_t insideRegion(SDL_Rect rect, uint16_t x, uint16_t y) {
   return x >= rect.x && y >= rect.y && x <= rect.x + rect.w && y <= rect.y + rect.h;
 }
 
-void resetInput() {
+void resetInput(SDL_Renderer *renderer) {
   for (uint16_t i = 0; i < 784; i++)
     input[i] = 0;
+  float percents[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  showresult(renderer, percents);
 }
 
 void cleanButtonClickHandle(SDL_Event e, SDL_Renderer *renderer) {
   drawPainel(renderer);
-  resetInput();
+  resetInput(renderer);
 }
 
 void recognizeButtonClickHandle(SDL_Event e) {
   printf("Em construção!!!\n");
 }
 
-void setInput(uint16_t x, uint16_t y) {
-  input[y * 28 + x] = 1.0f;
+void drawpixel(SDL_Renderer *renderer, uint16_t mx, uint16_t my, uint8_t color) {
+  SDL_Rect rect = {(mx / 10) * 10, (my / 10) * 10, 10, 10};
+  SDL_SetRenderDrawColor(renderer, 0, color, color, 255);
+  SDL_RenderFillRect(renderer, &rect);
 }
 
-void painelMouseMotionHandler(SDL_Renderer *renderer, uint16_t mx, uint16_t my, uint8_t drawing) {
-  if (drawing) {
-    SDL_Rect rect = {(mx / 10) * 10, (my / 10) * 10, 10, 10};
-    SDL_SetRenderDrawColor(renderer, cyan.r, cyan.g, cyan.b, 255);
-    SDL_RenderFillRect(renderer, &rect);
-    setInput((mx - 40.0f) / 10.0f, (my - 160.0f) / 10);
+void blurinput(uint32_t x, uint32_t y) {
+  float c = input[y * 28 + x] * 1.5f;
+  if (x + 1 < 28) {
+    c += input[y * 28 + x + 1];
+  }
+
+  if (x - 1 >= 0) {
+    c += input[y * 28 + x - 1];
+  }
+  
+  if (y + 1 < 28) {
+    c += input[(y + 1) * 28 + x];
+  }
+  
+  if (y - 1 >= 0) {
+    c += input[(y - 1) * 28 + x];
+  }
+
+  c /= 4.0f;
+
+  if (c > 1.0f)
+    c = 1.0f;
+
+  input[y * 28 + x] = c;
+}
+
+void setInput(SDL_Renderer *renderer, uint16_t x, uint16_t y, uint16_t mx, uint16_t my) {
+  input[y * 28 + x] = 1.0f;
+  blurinput(x, y);
+  drawpixel(renderer, mx, my, input[y * 28 + x] * 255.0f);
+  if (x + 1 < 28) {
+    blurinput(x + 1, y);
+    drawpixel(renderer, mx + 10, my, input[y * 28 + x + 1] * 255.0f);
+  }
+  
+  if (x - 1 >= 0) {
+    blurinput(x - 1, y);
+    drawpixel(renderer, mx - 10, my, input[y * 28 + x - 1] * 255.0f);
+  }
+
+  if (y + 1 < 28) {
+    blurinput(x, y + 1);
+    drawpixel(renderer, mx, my + 10, input[(y + 1) * 28 + x] * 255.0f);
+  }
+
+  if (y - 1 >= 0) {
+    blurinput(x, y - 1);
+    drawpixel(renderer, mx, my - 10, input[(y - 1) * 28 + x] * 255.0f);
+  } 
+}
+
+void painelMouseMotionHandler(SDL_Renderer *renderer, uint16_t mx, uint16_t my, uint8_t drawing, NET net) {
+  if (drawing) { 
+    uint16_t x = (mx - 40.0f) / 10.0f, y = (my - 160.0f) / 10;
+    setInput(renderer, x, y, mx, my);
+    float *out = feedforward(net, input);
+    showresult(renderer, out);
   }
 }
 
+void initializeIA(NET *net) {
+  ACTFUNC actsig = {sig, derivsig, 0};
+  uint32_t layers[] = {784, 64, 10};
+  *net = initnet(layers, 3, actsig, actsig);
+  loadweights(net->outneurons, net->nout, NULL, "../../redesneurais/src/versao2-backprop/neuralweights.net");
+}
+
+
 void main() {
+  NET net;
+  initializeIA(&net);
+
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Window *win = SDL_CreateWindow(
     "Reconhecimento de Digitos Numéricos Manuscritos",
@@ -137,7 +203,7 @@ void main() {
   SDL_Renderer *renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
   SDL_Event e;
   
-  resetInput();
+  resetInput(renderer);
   drawPainel(renderer);
   printtext(renderer, 400, 20, "-- Do Zero --", white, 1, 0, 36);
   printtext(renderer, 400, 80, "Reconhecimento de digitos manuscritos", white, 1, 0, 36);
@@ -146,9 +212,7 @@ void main() {
   SDL_Rect rect_r = {39, 530, 282, 60};
   createbutton(renderer, rect_c, green, black, "Limpar");
   createbutton(renderer, rect_r, blue, white, "Reconhecer");
-  float percents[] = {0.1, 0.3, 0.2, 0.8, 0.4, 0.1, 0.5, 0.4, 0.3, 0.1};
-  showresult(renderer, percents);
-  
+ 
   uint8_t running = 1;
   uint8_t drawing = 0;
 
@@ -172,7 +236,7 @@ void main() {
         case SDL_MOUSEMOTION:
           SDL_Rect rect = {40, 160, 279, 279};
           if (insideRegion(rect, e.motion.x, e.motion.y)) {
-            painelMouseMotionHandler(renderer, e.motion.x, e.motion.y, drawing);
+            painelMouseMotionHandler(renderer, e.motion.x, e.motion.y, drawing, net);
           }
       }
 
