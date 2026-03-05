@@ -5,17 +5,20 @@
 #include "utils.h"
 #include <string.h>
 #include <stdio.h>
-#define LR 0.05
+#define LR 0.05 // Learning Rate
 
 /*
  * Computa o custo da rede neural
  *
  * Parâmetros:
- *   neuron - neurônio de saída da rede ou o perceptron a ser calculado o custo
+ *   net - rede neural
  *   x - entradas das amostras
  *   y - saídas das amostras
  *   cost - a função de custo utilizada para calcular o custo
  *   samplesize - quantidade de amostras
+ *
+ * Retorno:
+ *   Custo da rede neural.
  */
 
 float computcost(NET net, float **x, float **y, float (*cost)(), uint32_t samplesize) {
@@ -25,16 +28,27 @@ float computcost(NET net, float **x, float **y, float (*cost)(), uint32_t sample
     out_pred[i] = feedforward(net, x[i]);
   }
   
-  /**************************************************/
   float c = cost(y, out_pred, samplesize, net.nout);
   for (uint32_t i = 0; i < samplesize; i++) {
     free(out_pred[i]);
   }
   free(out_pred);
-  /*************************************************/
 
   return c;
 }
+
+/*
+ * Atualiza os deltas e gradientes da rede neural
+ *
+ * Parâmetros:
+ *   net - rede neural
+ *   neurons - neurônios, de uma camada, que serão computados os gradientes e deltas
+ *   nneuros - quantidade de neurônios dessa camada
+ *   x - entradas de uma amostra
+ *   y - saidas de uma amostra
+ *   params - vetor de parâmetros que serão passados para a camada anterior (delta e pesos da camada corrente)
+ *   nparams - quantidade de parâmetros em params
+ */
 
 void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, float *y, BACKPARAMS *params, uint32_t nparams) {  
   float *y_hat = NULL;
@@ -50,7 +64,7 @@ void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, floa
       float error = (y_hat[i] - y[i]);
       neuron->delta = error * deriv;
     } else {
-      neuron->delta = 0; ///////////////////////// MUDEI AQUI
+      neuron->delta = 0;
       for (uint32_t k = 0; k < nparams; k++) {
         neuron->delta += params[k].weights[i] * params[k].delta;
       }
@@ -73,15 +87,14 @@ void updatedeltagrad(NET net, NEURON *neurons, uint32_t nneurons, float *x, floa
 }
 
 /*
- * Calcula o gradiente pelo método da derivada numérica
+ * Calcula o valor de saída de cada neurônio de saída da rede, dadas as entradas de uma amostra
  *
  * Parâmetros:
- *   neuron - endereço do neurônio com o parâmetro utilizado no cálculo
- *   cost - função de custo
- *   x - entradas das amostras
- *   y - saídas das amostras
- *   param - endereço do parâmetro utilizado no cálcuo
- *   samplesize - tamanho da amostra
+ *   net - rede neural 
+ *   x - entradas de uma amostra
+ *
+ * Retorno:
+ *   O valor de saída de cada neurônio de saída da rede
  */
 
 float *feedforward(NET net, float *x) {
@@ -96,6 +109,14 @@ float *feedforward(NET net, float *x) {
   return out;
 }
 
+/*
+ * Zera os campos a, z e delta de cada neurônio, onde a é a saída e z o cálculo do somatório das entradas multiplicadas pelos pesos.
+ *
+ * Parâmetros:
+ *   neurons - neurônios, de uma camada, que serão zerados o a, o z e o delta.
+ *   nneurons - quantidade de neurônios dessa camada
+ */
+
 void reset_forward(NEURON *neurons, uint32_t nneurons) {
   for (uint32_t i = 0; i < nneurons; i++) {
     NEURON *neuron = &neurons[i];
@@ -107,6 +128,14 @@ void reset_forward(NEURON *neurons, uint32_t nneurons) {
     reset_forward(neurons[0].conneurons, neurons[0].nconnections);
   }
 }
+
+/*
+ * Zera os gradiente dos pesos de todos os neurônios da rede
+ *
+ * Parâmetros:
+ *   neurons - neurônios, de uma camada, que serão zerados os gradientes
+ *   nneurons - número de neurônios dessa camada
+ */
 
 void reset_grad(NEURON *neurons, uint32_t nneurons) {
   for (uint32_t i = 0; i < nneurons; i++) {
@@ -122,14 +151,16 @@ void reset_grad(NEURON *neurons, uint32_t nneurons) {
 }
 
 /*
- * Cria um neurônio, inicializa seu pesos e bia
+ * Cria uma rede neural MLP suas camadas e neurônios, inicializa seus pesos e bias aleatoriamente
  *
  * Parâmetros:
- *   actfunc - a função de ativação do neurônio
- *   nconnections - número de conexões do neurônio
+ *   layers - um vetor que informa a quantidade de neurônios de cada camada
+ *   nlayers - o número de camadas da rede neural
+ *   intactfunc - a função de ativação e sua derivada dos neurônios das camadas intermediárias
+ *   outactfunc - a função de ativação e sua derivada dos neurônios da camada de saída da rede neural
  *
  * Retorno
- *   O neurônio criado.
+ *   O rede neural MLP criada.
  */
 
 NET initnet(uint32_t *layers, uint32_t nlayers, ACTFUNC intactfunc, ACTFUNC outactfunc) {
@@ -162,6 +193,15 @@ NET initnet(uint32_t *layers, uint32_t nlayers, ACTFUNC intactfunc, ACTFUNC outa
   return net;
 }
 
+/*
+ * Atualiza os parâmetros da rede em função das médias dos gradientes
+ *
+ * Parâmetros
+ *   neurons - neurônios, de uma camada da rede, que terão seu pesos e bias atualizados
+ *   nneurons - número de neurônios dessa camada
+ *   samplesize - quantidade de amostras
+ */
+
 void updateparams(NEURON *neurons, uint32_t nneurons, uint32_t samplesize) {
   for (uint32_t i = 0; i < nneurons; i++) {
     NEURON *neuron = &neurons[i];
@@ -176,17 +216,16 @@ void updateparams(NEURON *neurons, uint32_t nneurons, uint32_t samplesize) {
 }
 
 /*
- * Função de treinamento da rede neural
+ * Realiza o treinamento de uma época ou de um batch de uma rede neural MLP
  *
  * Parâmetros:
- * neuron - neurônio de saída da rede
- * cost - função de custo
- * x - entradas das amostras
- * y - saídas das amostras
- * samplesize - quantidade de amostras
+ *   net - rede neural
+ *   x - entradas de todas as amostras ou de um batch
+ *   y - saídas das amostras
+ *   samplesize - quantidade de amostras
  */
  
-float train(NET net, float **x, float **y, float samplesize) {
+void train(NET net, float **x, float **y, float samplesize) {
   reset_grad(net.outneurons, net.nout);
   for (uint32_t i = 0; i < samplesize; i++) {
     reset_forward(net.outneurons, net.nout);

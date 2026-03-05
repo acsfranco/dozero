@@ -39,9 +39,31 @@ struct Neuron {
  * Retorno:
  *   Valor de saída do neurônio
  */
+
+float computout(NEURON *neuron, float *x);
+
+/*
+ * Salva os pesos de uma rede em um arquivo
+ *
+ * Parâmetros:
+ *   neurons - neurônios de uma camada da rede (para salvar os pesos de todos os neurônios, essa função deve ser chamada, passando os neurônios da camada de saída da rede.
+ *   nneurons - número de neurônios da camada de neurônios
+ *   f - ponteiro para o arquivo a ser salvo
+ *   filename - nome do arquivo a ser salvo
+ */
+
 void saveweights(NEURON * neurons, uint32_t nneurons, FILE *f, const char *filename);
+
+/*
+ * Carrega, de um arquivo, os pesos de uma rede
+ *
+ * Parâmetros:
+ *   neurons - neurônios de uma camada da rede (para carregar os pesos de todos os neurônios, essa função deve ser chamada, passando os neurônios da camada de saída da rede.
+ *   nneurons - número de neurônios da camada de neurônios
+ *   f - ponteiro para o arquivo a ser salvo
+ *   filename - nome do arquivo a ser salvo
+ */
 
 void loadweights(NEURON * neurons, uint32_t nneurons, FILE *f, const char *filename);
 
-float computout(NEURON *neuron, float *x);
 #endif

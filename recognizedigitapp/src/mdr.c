@@ -7,6 +7,7 @@
 #include "../../redesneurais/src/versao2-backprop/neuralnet.h"
 #include "../../redesneurais/src/versao2-backprop/netmath.h"
 
+// CORES PREDEFINIDAS
 SDL_Color white = {255, 255, 255, 255};
 SDL_Color black = {0, 0, 0, 255};
 SDL_Color yellow = {255, 255, 0, 255};
@@ -14,7 +15,16 @@ SDL_Color cyan = {0, 255, 255, 255};
 SDL_Color blue = {0, 0, 255, 255};
 SDL_Color green = {0, 255, 0, 255};
 
+// ENTRADA DA REDE NEURAL
 float input[784];
+
+/*  FUNÇÃO: drawPainel:
+ *
+ *
+ *
+ *
+ *
+ *
 
 void drawPainel(SDL_Renderer *renderer) {
   SDL_Rect rect = {39, 159, 282, 282};

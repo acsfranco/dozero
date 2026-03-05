@@ -30,6 +30,16 @@ float sig(float x) {
   return 1.0 / (1.0 + exp(-x));
 }
 
+/*
+ * Função de ativação Relu.
+ *
+ * Parâmetros:
+ *   x - Entrada da função
+ *
+ * Retorno:
+ *   cálculo da Relu
+ */
+
 float relu(float x) {
   return x > 0 ? x : 0.001 * x;
 }
@@ -41,6 +51,7 @@ float relu(float x) {
  *   out_true - saídas das amostras de dados de treinamento
  *   out_pred - sáidas preditas pelo modelo
  *   samplesize - quantidade de amostras
+ *   nout - número de neurônios da camada de saída da rede
  *
  * Retorno
  *   O cálculo do custo
@@ -56,6 +67,19 @@ float mse(float **out_true, float **out_pred, uint32_t samplesize, uint32_t nout
   s /= (float)(samplesize * nout);
   return s;
 }
+
+/*
+ * Normaliza um valor, em relação a um conjunto de dados, baseado no valor máximo e mínimo e na entrada desse conjunto.
+ *
+ * Parâmetros:
+ *   input - valor a ser normalizado
+ *   x - conjunto de dados
+ *   inpindex - índice que corresponde a entrada do conjunto de dados a ser normalizada
+ *   samplesize - número de amostras do conjunto de dados
+ *
+ * Retorno:
+ *   o valor normalizado
+ */
 
 float normalize(float input, float **x, uint32_t inpindex, uint32_t samplesize) {
   float max = x[0][inpindex], min = x[0][inpindex];

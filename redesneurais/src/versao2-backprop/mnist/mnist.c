@@ -5,9 +5,34 @@
 #include "../utils.h"
 #include "mnist.h"
 
+/****************************************************************
+ * BIBLIOTECA MNIST: Funções para carregar os arquivos do mnist *
+ * e convertê-los na entrada da rede neural.                    *
+ * **************************************************************/
+
+/*
+ * Converte um conjunto de bytes em Big Endian para um inteiro
+ *
+ * Parâmetros:
+ *   bytes - vetor de bytes
+ *
+ * Retorno
+ *   número inteiro convertido
+ */
+
 uint32_t convertBigEndianToInt(uint8_t bytes[4]) {
   return bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3];
 }
+
+/*
+ * Carrega um arquivo do mnist, contendo as imagens dos dígitos
+ *
+ * Parâmetros:
+ *   filaname - arquivo do mnist
+ *
+ * Retorno:
+ *   Uma variável do tipo estruturado MNIST_Images, contendo os dados do arquivo
+ */
 
 MNIST_Images load_mnist_images(const char *filename) {
   FILE *f = fopen(filename, "rb");
@@ -33,6 +58,16 @@ MNIST_Images load_mnist_images(const char *filename) {
   return images;
 }
 
+/*
+ * Carrega os arquivos de labels das imagens mnist
+ *
+ * Parâmetros:
+ *   filaname - arquivo do mnist
+ *
+ * Retorno:
+ *   Uma variável do tipo estruturado MNIST_Labels, contendo os dados do arquivo
+ */
+
 MNIST_Labels load_mnist_labels(const char *filename) {
   FILE *f = fopen(filename, "rb");
   MNIST_Labels labels;
@@ -52,6 +87,15 @@ MNIST_Labels load_mnist_labels(const char *filename) {
   return labels; 
 }
 
+/*
+ * Imprime, em modo texto, uma imagem do conjunto de imagens do mnist
+ *
+ * Parâmetros:
+ *   images - uma variável do tipo estruturado MNIST_Images, contendo as
+ *   informações do conjunto de dados
+ *   index - o índice da imagem, no conjunto de dados, a ser impressa
+ */
+
 void print_MNIST_image(MNIST_Images images, uint32_t index) {
   uint32_t imagesize = images.xsize * images.ysize;
   uint8_t *image = (uint8_t *) malloc(imagesize);
@@ -68,6 +112,16 @@ void print_MNIST_image(MNIST_Images images, uint32_t index) {
   }
 }
 
+/*
+ * Converte o formato mnist no conjunto de entradas da rede neural
+ *
+ * Parâmetros:
+ *   images - imagens do mnist
+ *
+ * Retorno
+ *   conjunto de dados de entrada da rede neural
+ */
+
 float **convertmnistimagestoinp(MNIST_Images images) {
   uint32_t datasize = images.xsize * images.ysize;
   float **x = mallocmatrix(images.samplesize, datasize);
@@ -78,6 +132,16 @@ float **convertmnistimagestoinp(MNIST_Images images) {
   }
   return x;
 }
+
+/*
+ * Converte os labels das imagens mnist no conjunto de saída da rede neural
+ *
+ * Parâmetros:
+ *   labels - Os labels das imagens do mnist
+ *
+ * Retorno:
+ *   conjunto de dados de saída da rede neural
+ */
 
 float **convertmnistlabelstoout(MNIST_Labels labels) {
   uint32_t samplesize = labels.samplesize;

@@ -4,18 +4,20 @@
 #include "neuralnet.h"
 #include "utils.h"
 #include <string.h>
-
 #include <stdio.h>
 
 /*
  * Computa o custo da rede neural
  *
  * Parâmetros:
- *   neuron - neurônio de saída da rede ou o perceptron a ser calculado o custo
+ *   net - rede neural
  *   x - entradas das amostras
  *   y - saídas das amostras
  *   cost - a função de custo utilizada para calcular o custo
  *   samplesize - quantidade de amostras
+ * 
+ * Retorno:
+ *   Custo da rede neural
  */
 
 float computcost(NET net, float **x, float **y, float (*cost)(), uint32_t samplesize) {
@@ -25,13 +27,11 @@ float computcost(NET net, float **x, float **y, float (*cost)(), uint32_t sample
     out_pred[i] = feedforward(net, x[i]);
   }
   
-  /**************************************************/
   float c = cost(y, out_pred, samplesize, net.nout);
   for (uint32_t i = 0; i < samplesize; i++) {
     free(out_pred[i]);
   }
   free(out_pred);
-  /*************************************************/
 
   return c;
 }
@@ -40,7 +40,7 @@ float computcost(NET net, float **x, float **y, float (*cost)(), uint32_t sample
  * Calcula o gradiente pelo método da derivada numérica
  *
  * Parâmetros:
- *   neuron - endereço do neurônio com o parâmetro utilizado no cálculo
+ *   net - rede neural
  *   cost - função de custo
  *   x - entradas das amostras
  *   y - saídas das amostras
@@ -62,6 +62,17 @@ float computgradient(NET *net, float (*cost)(), float **x, float **y, float *par
   return gradient;
 }
 
+/*
+ * Calcula o valor de saída de cada neurônio de saída da rede, dadas as entradas de uma amostra
+ *
+ * Parâmetros:
+ *   net - rede neural 
+ *   x - entradas de uma amostra
+ *
+ * Retorno:
+ *   O valor de saída de cada neurônio de saída da rede
+ */
+
 float *feedforward(NET net, float *x) {
   float *out = (float *)malloc(sizeof(float) * net.nout);
 
@@ -73,14 +84,16 @@ float *feedforward(NET net, float *x) {
 }
 
 /*
- * Cria um neurônio, inicializa seu pesos e bia
+ * Cria uma rede neural MLP suas camadas e neurônios, inicializa seus pesos e bias aleatoriamente
  *
  * Parâmetros:
- *   actfunc - a função de ativação do neurônio
- *   nconnections - número de conexões do neurônio
+ *   layers - um vetor que informa a quantidade de neurônios de cada camada
+ *   nlayers - o número de camadas da rede neural
+ *   intactfunc - a função de ativação dos neurônios das camadas intermediárias
+ *   outactfunc - a função de ativação dos neurônios da camada de saída da rede neural
  *
  * Retorno
- *   O neurônio criado.
+ *   O rede neural MLP criada.
  */
 
 NET initnet(uint32_t *layers, uint32_t nlayers, float (*intactfunc)(float), float (*outactfunc)(float)) {
@@ -110,6 +123,17 @@ NET initnet(uint32_t *layers, uint32_t nlayers, float (*intactfunc)(float), floa
   return net;
 }
 
+/*
+ * Atualiza os parâmetros da rede em função dos gradientes
+ *
+ * Parâmetros
+ *   net - rede neural
+ *   neuron - camada de neurônios que serão atualizados os parâmetros
+ *   cost - função de custo
+ *   x - amostras de entrada da rede
+ *   samplesize - quantidade de amostras
+ */
+
 void updateparams(NET *net, NEURON *neuron, float (*cost)(), float **x, float **y, uint32_t samplesize) {
   float gradient;
 
@@ -131,7 +155,7 @@ void updateparams(NET *net, NEURON *neuron, float (*cost)(), float **x, float **
  * Função de treinamento da rede neural
  *
  * Parâmetros:
- * neuron - neurônio de saída da rede
+ * net - rede neural
  * cost - função de custo
  * x - entradas das amostras
  * y - saídas das amostras
@@ -145,4 +169,3 @@ float train(NET *net, float (*cost)(float **, float **, uint32_t), float **x, fl
     updateparams(net, &net->outneurons[i], cost, x, y, samplesize);
   }
 }
-

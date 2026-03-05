@@ -36,6 +36,15 @@ float ** mallocmatrix(uint32_t linhas, uint32_t colunas) {
   return x;
 }
 
+/*
+ * Embaralha um vetor de indices
+ *
+ * Parâmetro:
+ * 
+ * index - vetor de indices a ser embaralhado
+ * size - tamanho do vetor
+ */
+
 void shuffle(uint32_t *index, uint32_t size) {
   for (uint32_t i = size - 1; i > 0; i--) {
     uint32_t j = rand() % (i + 1);
