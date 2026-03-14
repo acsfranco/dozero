@@ -1,41 +1,48 @@
-ORG	0x7C00
-BITS	16			; Código em 16 bits
-start:
-	xor ax, ax
-	mov ds, ax		; Zerando o registrador de segmento de dados
-	mov ss, ax		; Zerando o registrador de segmento de pilha
-	mov es, ax		; Zerando o registrador de segmento de dados extra
-	mov sp, 0x7A00		; Ponteiro da pilha iniciando em 0x7C00
+ORG 0x7c00    ; Endereço inicial do bootloader - Sem isso, o label start teria o endereço 0
+BITS 16       ; Código em 16 bits
 
-  mov dl, 0x80          ; Se for usar o pendrive para rodar numa máquina real, senão comente essa linha
-  mov [BOOT_DRIVER], dl
-	; Lendo o inicializador do kernel para a memória
-	mov ah, 0x02		; Função da BIOS para leitura física no dispositivo de armazenamento
-	mov al, 4		; Número de setores a serem lidos
-	mov ch, 0		; Número do cilíndro
-	mov cl, 2		; Setor inicial a ser lido
-	mov dh,	0		; Cabeça de leitura 0
-	mov dl, [BOOT_DRIVER]	; Driver - 0x80 - PenDrive
-	mov bx, 0x1000		; Endereço de offset de memória para onde vai ser carregado o inicializado do kernel
-	; O registrador de segmento es é o segmento de memória onde o kernel vai ser carregado - Seu valor já foi inicializado como 0
-	int 0x13		; Executando a rotina da bios para gravar o kernel na memória
-	
-  mov ah, 0x0E
-  mov al, 'O'
-  int 0x10;
-  mov al, 'I'
-  int 0x10
-  mov al, '!'
-  int 0x10
-  mov al, 10
-  int 0x10
-  mov al, 13
-  int 0x10
+start:        ; Aqui começa o código do bootloader. Se alguma instrução saltar para start, vai saltar para 0x7c00 
+  ; Zerando os registradores de segmento
+  
+  xor ax, ax
+  mov es, ax
+  mov ds, ax
+  mov ss, ax
+  mov sp, 0x7000    ; Endereço da pilha do bootloader
 
-  call 0x0000:0x1000		; Dando um salto para o kernel ser executado
+  ; Imprimindo uma mensagem
+  
+  mov ah, 0x0e
+  mov si, mensagem  ; Endereço inicial da mensagem
+print:
+  mov al, [si]      ; O caractere corrente da mensagem a ser impresso
+  cmp al, 0         ; Comparando o caractere corrente com 0 (final da mensagem)
+  jz  carregakernel ; Se for final da mensagem salte para o carregamento do kernel
+  int 0x10          ; Imprimindo o caractere corrente
+  inc si            ; Incrementando si para ir para o endereço do próximo caractere da mensagem
+  jmp print         ; Volta para imprimir o próximo caractere da mensagem
 
-BOOT_DRIVER: db 0
-times	510-($-$$) db 0
-dw 0xAA55			; Magic bootloader number
+  ; Carregando o kernel
 
-	
+carregakernel:
+  mov ah, 0         ; Espera uma tecla ser pressionada
+  int 0x16
+
+  mov ah, 2         ; Rotina na BIOS para carregar dados a partir de um setor físico do disco
+  mov al, 4         ; Quantidade de setores que ocupa o kernel
+  mov ch, 0         ; Cilindro
+  mov cl, 2         ; Setor inicial do disco onde começa o kernel
+  mov dh, 0         ; Cabeça
+  mov dl, 0x80      ; 0x80 - Geralmente é o primeiro driver inicializável encontrado
+  xor bx, bx        ; Endereço de segmento na memória para onde será carregado o kernel
+  mov es, bx
+  mov bx, 0x1000    ; Endereço de offset para onde será carregado o kernel
+  int 0x13          ; Carregando o kernel
+
+  mov sp, 0x1FFF    ; Endereço da pilha do kernel
+  jmp 0x1000        ; Saltando para o kernel
+
+  jmp $
+mensagem db "Iniciando o sistema operacional Imersus...", 10, 13, "Pressione uma tecla para continuar...", 0
+times 510 - ($ - $$) db 0 ; Completando com 0's até o tamanho do código chegar a 512 bytes
+dw 0xaa55                 ; Bootloader magic number

@@ -1,6 +1,6 @@
-ORG 0x7c00		; Avisa ao montador que o código deve começar em 0x7c00 (Endereço onde o
-			; bootloader é carregado pela BIOS)
-BITS 16			; Compila o código em 16 bits
+ORG 0x7c00		  ; Avisa ao montador que o código deve começar em 0x7c00 (Endereço onde o
+			          ; bootloader é carregado pela BIOS)
+BITS 16			    ; Compila o código em 16 bits
 
 ; =================================================================================================
 ;	Código de um bootloader que mostra uma mensagem na tela,
@@ -10,10 +10,10 @@ BITS 16			; Compila o código em 16 bits
 ;
 ;	Para compilar, digite no terminal: nasm -f bin bootloader1.asm -o boot.bin
 ;	Para executar no qemu, digite no terminal qemu-system-i386 -drive format=raw, file=boot.bin
-; **************************************************************************************************
+; =================================================================================================
 
-start:			; rótulo - É convertido pelo montador em uma posição de memória (neste caso
-			; o endereço é 0x7c00, por causa dessa informação na diretiva ORG
+start:			    ; rótulo - É convertido pelo montador em uma posição de memória (neste caso
+			          ; o endereço é 0x7c00, por causa dessa informação na diretiva ORG
 
 ; Zerando os registradores de segmento
 
@@ -29,25 +29,25 @@ start:			; rótulo - É convertido pelo montador em uma posição de memória (n
 print:	mov al, [si]
 	cmp al, 0
 	jz keypress
-	int 0x10	; Interrupção da bios de video
+	int 0x10	    ; Interrupção da bios de video
 	inc si
 	jmp print
 
 ; Aguardando uma tecla ser pressionada
 
 keypress:
-	mov ah, 0	; Rotina para esperar uma tecla ser pressionada
-	int 0x16	; Interrupção da bios do teclado
+	mov ah, 0	    ; Rotina para esperar uma tecla ser pressionada
+	int 0x16	    ; Interrupção da bios do teclado
 
 ; Mudando o modo de vídeo para o modo gráfico VGA 320x200x256 cores
 
 modografico:
-	mov ah, 0	; Rotina da bios para setar o modo de vídeo
+	mov ah, 0	    ; Rotina da bios para setar o modo de vídeo
 	mov al, 0x13	; 320 x 200 x 8 bits de cores (256 cores)
 	int 0x10
-	mov ax, 0xa000	; 0xa0000 - Endereço da VRAM
-	mov es, ax	; Atribuindo o valor 0xA000 no registrador es
-	mov di, 0	; Atribuindo o valor inicial 0, de deslocamento, no registrador di. es * 16 + di = 0xA0000 
+	mov ax, 0xa000; 0xa0000 - Endereço da VRAM
+	mov es, ax	  ; Atribuindo o valor 0xA000 no registrador es
+	mov di, 0	    ; Atribuindo o valor inicial 0, de deslocamento, no registrador di. es * 16 + di = 0xA0000 
 
 ; Desenhando na tela
 
