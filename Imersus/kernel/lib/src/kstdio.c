@@ -1,13 +1,13 @@
-#include <stdarg.h> ////////////////////////////////////////////
+#include <stdarg.h>
 #include "../../tty/tty.h"
 #include "../include/kstdio.h"
 
-extern void vga_putchar(char, int, int); ///////////////// Esqueci do void e dos argumento
+extern void vga_putchar(char, int, int);
 
 tty_t tty;
 
 void print_char(char c) {
-  tty_putchar(&tty, c); /////////////// Passagem de parâmetro por referência
+  tty_putchar(&tty, c);
 }
 
 void print_string(const char *str) {
@@ -80,23 +80,23 @@ void print_float(double num, unsigned char nd) {
 
 void kclear() {
   tty.driver_putchar = vga_putchar;
-  tty.width = 80; ////////////////////////// faltou definir o tamanho do terminal
-  tty.height = 25;/////////////////////////
+  tty.width = 80;
+  tty.height = 25;
 
   tty_clear(&tty);
 }
 
 void kprintf(char *fmt, ...) {
   va_list args;
-  va_start(args, fmt); ////////////////////////////// Faltou ;
+  va_start(args, fmt);
   unsigned char nd = 0;
   tty.driver_putchar = vga_putchar;
-  tty.width = 80; ////////////////////////// faltou definir o tamanho do terminal
-  tty.height = 25;/////////////////////////
+  tty.width = 80;
+  tty.height = 25;
 
-  while (*fmt) { // ler o próximo caractere
-    if (*fmt == '%') { // ler o caractere seguinte
-      fmt++; // avançar para o próximo caractere
+  while (*fmt) {
+    if (*fmt == '%') {
+      fmt++;
       if (*fmt == '.') {
         fmt++;
         while(*fmt >= '0' && *fmt <= '9') {
@@ -118,6 +118,7 @@ void kprintf(char *fmt, ...) {
           nd = 6;
         }
         print_float(val, nd);
+        nd = 0; ///////////////////////////// Corrige o problema de imprimir um número float com restrição de casas decimais, depois de imprimir um sem restrições
       }
       if (*fmt == 'c') {
         char val = (char)va_arg(args, int);
