@@ -1,6 +1,8 @@
 #include "tty.h"
 
-void tty_putchar(tty_t *tty, char c) { ////////////////////////////// Passagem de parâmetro por referência
+tty_t tty_default;
+
+void tty_putchar(tty_t *tty, char c) {
   if (c == '\n' || tty->x >= tty->width) {
     tty->y++;
     tty->x = 0;
@@ -11,7 +13,7 @@ void tty_putchar(tty_t *tty, char c) { ////////////////////////////// Passagem d
   }
 }
 
-void tty_clear(tty_t *tty) { //////////////////// Passagem de parâmetro por referência
+void tty_clear(tty_t *tty) {
   int x, y;
   for (y = 0; y < tty->height; y++) {
     for (x = 0; x < tty->width; x++) {
@@ -20,4 +22,10 @@ void tty_clear(tty_t *tty) { //////////////////// Passagem de parâmetro por ref
   }
   tty->x = 0;
   tty->y = 0;
+}
+
+int tty_write(tty_t *tty, char *buf, int size) {
+  for (int i = 0; i < size; i++) {
+    tty_putchar(tty, buf[i]);
+  }
 }

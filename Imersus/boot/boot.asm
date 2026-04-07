@@ -16,7 +16,7 @@ start:			        ; rótulo - É convertido pelo montador em uma posição de mem
 ; Carregando o inicializador do Kernel na memória
  
   mov ah, 2
-  mov al, 4
+  mov al, 34 ;;;;;;;;;;;;;;;;;;;;; estava 4
   mov cl, 2
   mov ch, 0
   mov dh, 0

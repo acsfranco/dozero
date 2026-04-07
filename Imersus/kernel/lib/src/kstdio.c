@@ -1,13 +1,17 @@
 #include <stdarg.h>
-#include "../../tty/tty.h"
 #include "../include/kstdio.h"
+#include "../../fs/fs.h" ///////////////////////////////////
+#include "../../tty/tty.h"
 
-extern void vga_putchar(char, int, int);
+#define MAX_BUFF 1024
 
-tty_t tty;
+extern tty_t tty_default;
+
+char buffer[MAX_BUFF];
+int pos = 0;
 
 void print_char(char c) {
-  tty_putchar(&tty, c);
+  buffer[pos++] = c;
 }
 
 void print_string(const char *str) {
@@ -79,20 +83,13 @@ void print_float(double num, unsigned char nd) {
 }
 
 void kclear() {
-  tty.driver_putchar = vga_putchar;
-  tty.width = 80;
-  tty.height = 25;
-
-  tty_clear(&tty);
+  tty_clear(&tty_default);
 }
 
 void kprintf(char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
   unsigned char nd = 0;
-  tty.driver_putchar = vga_putchar;
-  tty.width = 80;
-  tty.height = 25;
 
   while (*fmt) {
     if (*fmt == '%') {
@@ -118,7 +115,7 @@ void kprintf(char *fmt, ...) {
           nd = 6;
         }
         print_float(val, nd);
-        nd = 0; ///////////////////////////// Corrige o problema de imprimir um número float com restrição de casas decimais, depois de imprimir um sem restrições
+        nd = 0;
       }
       if (*fmt == 'c') {
         char val = (char)va_arg(args, int);
@@ -136,5 +133,7 @@ void kprintf(char *fmt, ...) {
     }
     fmt++;
   }
+  write(1, buffer, pos);
+  pos = 0;
   va_end(args);
 }

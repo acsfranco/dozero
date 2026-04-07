@@ -22,11 +22,20 @@ all: ./build/os.img
 ./build/tty.o: ./kernel/tty/tty.c
 	$(CC) $(CFLAGS) -c ./kernel/tty/tty.c -o ./build/tty.o
 
+./build/init.o: ./kernel/init/init.c
+	$(CC) $(CFLAGS) -c ./kernel/init/init.c -o ./build/init.o
+
+./build/fs.o: ./kernel/fs/fs.c
+	$(CC) $(CFLAGS) -c ./kernel/fs/fs.c -o ./build/fs.o
+
+./build/process.o: ./kernel/proc/process.c
+	$(CC) $(CFLAGS) -c ./kernel/proc/process.c -o ./build/process.o
+
 ./build/kernel.o: ./kernel/src/kernel.c
 	$(CC) $(CFLAGS) -c ./kernel/src/kernel.c -o ./build/kernel.o
 
-./build/kernel.elf: ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o linker.ld
-	$(LD) $(LDFLAGS) -T linker.ld ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o -o ./build/kernel.elf
+./build/kernel.elf: ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o  linker.ld
+	$(LD) $(LDFLAGS) -T linker.ld ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o -o ./build/kernel.elf
 
 ./build/kernel.bin: ./build/kernel.elf
 	objcopy -O binary ./build/kernel.elf ./build/kernel.bin
