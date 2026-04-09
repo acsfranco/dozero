@@ -16,6 +16,18 @@ all: ./build/os.img
 ./build/vga_putchar.o: ./kernel/drivers/vga_putchar.asm
 	$(AS) -f elf32 ./kernel/drivers/vga_putchar.asm -o ./build/vga_putchar.o
 
+
+################################### NOVO
+./build/outb.o: ./kernel/drivers/outb.asm
+	$(AS) -f elf32 ./kernel/drivers/outb.asm -o ./build/outb.o
+
+################################## NOVO
+./build/inb.o: ./kernel/drivers/inb.asm
+	$(AS) -f elf32 ./kernel/drivers/inb.asm -o ./build/inb.o
+
+
+
+
 ./build/kstdio.o: ./kernel/lib/src/kstdio.c
 	$(CC) $(CFLAGS) -c ./kernel/lib/src/kstdio.c -o ./build/kstdio.o
 
@@ -31,11 +43,15 @@ all: ./build/os.img
 ./build/process.o: ./kernel/proc/process.c
 	$(CC) $(CFLAGS) -c ./kernel/proc/process.c -o ./build/process.o
 
+######################## NOVO
+./build/vga.o: ./kernel/drivers/vga.c
+	$(CC) $(CFLAGS) -c ./kernel/drivers/vga.c -o ./build/vga.o
+
 ./build/kernel.o: ./kernel/src/kernel.c
 	$(CC) $(CFLAGS) -c ./kernel/src/kernel.c -o ./build/kernel.o
 
-./build/kernel.elf: ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o  linker.ld
-	$(LD) $(LDFLAGS) -T linker.ld ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o -o ./build/kernel.elf
+./build/kernel.elf: ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o ./build/outb.o ./build/inb.o ./build/vga.o  linker.ld
+	$(LD) $(LDFLAGS) -T linker.ld ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o ./build/outb.o ./build/inb.o ./build/vga.o -o ./build/kernel.elf
 
 ./build/kernel.bin: ./build/kernel.elf
 	objcopy -O binary ./build/kernel.elf ./build/kernel.bin

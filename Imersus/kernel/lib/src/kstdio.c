@@ -2,6 +2,7 @@
 #include "../include/kstdio.h"
 #include "../../fs/fs.h" ///////////////////////////////////
 #include "../../tty/tty.h"
+#include "../../include/unistd.h"
 
 #define MAX_BUFF 1024
 
@@ -133,7 +134,7 @@ void kprintf(char *fmt, ...) {
     }
     fmt++;
   }
-  write(1, buffer, pos);
+  write(STDOUT, buffer, pos);
   pos = 0;
   va_end(args);
 }
