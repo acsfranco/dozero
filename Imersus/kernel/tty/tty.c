@@ -4,6 +4,8 @@ tty_t tty_default;
 
 void tty_setcursorpos(tty_t *tty, uint16_t x, uint16_t y) {
   tty->driver_setcursorpos(x, y);
+  tty->x = x;
+  tty->y = y;
 }
 
 void tty_push_char(tty_t *tty, char c) {
@@ -49,14 +51,13 @@ void tty_backgroundcolor(tty_t *tty, uint32_t color){
 
 void tty_clear(tty_t *tty) {
   int x, y;
+  tty_setcursorpos(tty, 0, 0);
   for (y = 0; y < tty->height; y++) {
     for (x = 0; x < tty->width; x++) {
       tty_putchar(tty, ' ');
     }
   }
-  tty->x = 0;
-  tty->y = 0;
-  tty_setcursorpos(tty, tty->x, tty->y);
+  tty_setcursorpos(tty, 0, 0);
 }
 
 int tty_write(tty_t *tty, char *buf, int size) {
