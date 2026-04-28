@@ -3,6 +3,7 @@
 #include "../global/global.h"
 #include "interpreter.h"
 #include <stdint.h>
+#include "../drivers/keyboard.h"
 
 extern tty_t tty_default;
 
@@ -47,11 +48,12 @@ void prompt() {
 void kshell() {
   header();
   prompt();
-  run("echo Seja bem vindo ao kshell");
-  prompt();
-  run("version");
-  run("clear");
-  prompt();
-  run("setcolor 0 4");
-  run("version");
+  while(1) {
+    char *cmd = kgets();
+    kprintf("\n");
+    if (cmd[0] != 0)
+      run(cmd);
+    prompt();
+  }
+
 }

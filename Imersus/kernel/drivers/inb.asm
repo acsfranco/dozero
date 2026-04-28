@@ -1,8 +1,8 @@
-global intb
+global inb ;;;;;;;;;;;; Estava intb
 
 section .text
 
-outb:
+inb: ;;;;;;;;;;;; Estava outb
   push ebp
   mov ebp, esp
   push dx

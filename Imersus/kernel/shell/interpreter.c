@@ -6,6 +6,7 @@
 extern exec_t commandlist[]; //////// exec_t no lugar de exect_t e trocar o L por l em commandlist
 
 void decode(char tokens[MAX_TOKENS][MAX_TKLEN], command_t *command, int noftokens) {
+  command->identifier = "";
   for (int i = 0; i < noftokens; i++) { ///// colocar o int ante do i
     if (i == 0)
       command->identifier = tokens[i]; ///////// identifier no lugar de identifer
@@ -31,6 +32,7 @@ int execute(command_t command) {
 }
 
 int load(command_t command) {
+  kprintf("%s: commando nao encontrado.\n", command.identifier);
   return 0;
 }
 

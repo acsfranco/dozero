@@ -1,10 +1,12 @@
 #include "keyboard.h"
-#include "kernel/tty/tty.h"
+#include "../tty/tty.h" //////////////////////////// tinha colocado kernel/tty/tty.h
 
 #define KB_BUFFER_SIZE 256
 
-keyboart_t keyboard;
+keyboard_t keyboard; /////////////////////////// Estava keyboart_t
 void *kbctx;
+char keyprior = 0;
+
 char keybuff[KB_BUFFER_SIZE];
 int head = 0;
 int tail = 0;
@@ -68,6 +70,7 @@ char decode_scancode(uint8_t scancode) {
   else if (scancode & 0x80) { // Teclado liberado
     keyboard.released = 1;
     keyboard.pressed = 0;
+    keyprior = 0;
     return 0;
   } else if (!(scancode & 0x80)) { // Teclado pressionado
     keyboard.released = 0;
@@ -81,6 +84,11 @@ char decode_scancode(uint8_t scancode) {
     c = keymap_shift[scancode];
   else
     c = keymap[scancode];
+  
+  if (c == keyprior && !keyboard.released)
+    return 0;
+
+  keyprior = c;
 
   keyboard.key = c;
 

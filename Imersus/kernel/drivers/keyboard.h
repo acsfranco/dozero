@@ -1,3 +1,4 @@
+#pragma once ///////////////////////////// Faltou isso
 #include "port.h"
 
 #define KEYBOARD_DATA_PORT 0x60
@@ -9,7 +10,7 @@ typedef struct {
   int shift;
   int pressed;
   int released;
-} keyboad_t;
+} keyboard_t; ///////////////////////////// Estava keyboad_t
 
 uint8_t get_scandcode();
 char decode_scancode(uint8_t scancode);

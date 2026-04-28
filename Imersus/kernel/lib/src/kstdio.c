@@ -5,6 +5,7 @@
 #include "../../include/unistd.h"
 
 #define MAX_BUFF 1024
+#define MAX_STRLEN 500
 
 extern tty_t tty_default;
 
@@ -20,6 +21,38 @@ void print_string(const char *str) {
     print_char(*str);
     str++;
   }
+}
+
+char *kgets() {
+  static char str[MAX_STRLEN], c;
+  int i = 0;
+
+  do {
+    c = kgetchar();
+
+    if (c == '\b')
+      i--;
+    else if (c && c != '\n')
+      str[i++] = c;
+
+    if (i < 0)
+      i = 0;
+    else if (c && c != '\n')
+      kputc(c);
+  } while (c != '\n');
+  str[i] = 0;
+  return str;
+}
+
+void kputc(char c) {
+  kprintf("%c", c);
+}
+
+char kgetchar() {
+  char buffer[1];
+
+  tty_read(&tty_default, buffer, 1);
+  return buffer[0];
 }
 
 void print_int(int num) {

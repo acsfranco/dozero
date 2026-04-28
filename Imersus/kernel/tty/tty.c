@@ -1,4 +1,5 @@
 #include "tty.h"
+#include "../drivers/keyboard.h"
 
 tty_t tty_default;
 
@@ -19,7 +20,9 @@ void tty_push_char(tty_t *tty, char c) {
 int tty_read(tty_t *tty, char *buf, int size) {
   int i = 0;
   while (i < size) {
-    while (tty->buff.head == tty->buff.tail); // Bloquei enquanto o buffer estiver vazio
+    //while (tty->buff.head == tty->buff.tail); // Bloquei enquanto o buffer estiver vazio
+    keyboard_read();
+    if (tty->buff.head == tty->buff.tail) return 0;
     buf[i++] = tty->buff.buffer[tty->buff.tail];
     tty->buff.tail = (tty->buff.tail + 1) % TTY_BUFFER_SIZE;
 
@@ -33,10 +36,13 @@ void tty_putchar(tty_t *tty, char c) {
   if (c == '\n' || tty->x >= tty->width) {
     tty->y++;
     tty->x = 0;
+  } else if (c == '\b') {
+    tty->x--;
   }
+   
   if (c != '\n') {
-    tty->driver_putchar(c, tty->x, tty->y, tty->bkcolor, tty->fgcolor);
-    tty->x++;
+    tty->driver_putchar(c != '\b' ? c : ' ', tty->x, tty->y, tty->bkcolor, tty->fgcolor);
+    if (c != '\b') tty->x++;
   }
   tty_setcursorpos(tty, tty->x, tty->y);
 }

@@ -3,6 +3,7 @@
 #include "../include/stddef.h"
 #include "../drivers/vga.h"
 #include "../include/unistd.h"
+#include "../drivers/keyboard.h"
 
 extern process_t current_process;
 extern tty_t tty_default;
@@ -45,4 +46,5 @@ void kernel_init() {
   kernel_process.fd_table[STDERR] = &fstdout;
 
   current_process = kernel_process;
+  keyboard_init(&tty_default);
 }

@@ -61,8 +61,11 @@ all: ./build/os.img
 ./build/kernel.o: ./kernel/src/kernel.c
 	$(CC) $(CFLAGS) -c ./kernel/src/kernel.c -o ./build/kernel.o
 
-./build/kernel.elf: ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o ./build/outb.o ./build/inb.o ./build/vga.o ./build/kshell.o ./build/command.o ./build/commandlist.o ./build/interpreter.o ./build/tokens.o ./build/kstring.o linker.ld
-	$(LD) $(LDFLAGS) -T linker.ld ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o ./build/outb.o ./build/inb.o ./build/vga.o ./build/kshell.o ./build/command.o ./build/commandlist.o ./build/interpreter.o ./build/tokens.o ./build/kstring.o -o ./build/kernel.elf
+./build/keyboard.o: ./kernel/drivers/keyboard.c
+	$(CC) $(CFLAGS) -c ./kernel/drivers/keyboard.c -o ./build/keyboard.o
+
+./build/kernel.elf: ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o ./build/outb.o ./build/inb.o ./build/vga.o ./build/kshell.o ./build/command.o ./build/commandlist.o ./build/interpreter.o ./build/tokens.o ./build/kstring.o ./build/keyboard.o linker.ld
+	$(LD) $(LDFLAGS) -T linker.ld ./build/kernel_entry.o ./build/kernel.o ./build/vga_putchar.o ./build/kstdio.o ./build/tty.o ./build/init.o ./build/fs.o ./build/process.o ./build/outb.o ./build/inb.o ./build/vga.o ./build/kshell.o ./build/command.o ./build/commandlist.o ./build/interpreter.o ./build/tokens.o ./build/kstring.o ./build/keyboard.o  -o ./build/kernel.elf
 
 ./build/kernel.bin: ./build/kernel.elf
 	objcopy -O binary ./build/kernel.elf ./build/kernel.bin

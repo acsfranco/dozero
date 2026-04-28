@@ -11,7 +11,7 @@ void exec_clear(uint8_t argc, char *argv[MAX_ARGS]) {
 }
 
 void exec_version(uint8_t argc, char *argv[MAX_ARGS]) {
-  kprintf("\nImersus versao %.1f\n", SO_VERSION);
+  kprintf("Imersus versao %.1f\n", SO_VERSION);
   kprintf("Kernel versao %.1f\n", KERNEL_VERSION);
   kprintf("KShell versao %.1f\n", KSHELL_VERSION);
   kprintf("Autor %s\n", AUTHOR);
@@ -41,7 +41,6 @@ void exec_setcolor(uint8_t argc, char *argv[MAX_ARGS]){
 
 
 void exec_echo(uint8_t argc, char *argv[MAX_ARGS]) {
-  kprintf("\n");
   for(int i = 0; i < argc; i++) {
     kprintf("%s ", argv[i]);
   }
