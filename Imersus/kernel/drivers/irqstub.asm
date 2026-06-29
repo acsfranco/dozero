@@ -17,4 +17,4 @@ irq%1:
 %endmacro
 
 IRQ 32, clock_handle
-IRQ 33, keyboar_handle
+IRQ 33, keyboard_handle

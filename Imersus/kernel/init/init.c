@@ -4,6 +4,8 @@
 #include "../drivers/vga.h"
 #include "../include/unistd.h"
 #include "../drivers/keyboard.h"
+#include "../drivers/pic.h"
+#include "../drivers/idt.h"
 
 extern process_t current_process;
 extern tty_t tty_default;
@@ -47,4 +49,6 @@ void kernel_init() {
 
   current_process = kernel_process;
   keyboard_init(&tty_default);
+  pic_config();
+  idt_init();
 }

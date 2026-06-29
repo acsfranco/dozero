@@ -20,8 +20,7 @@ void tty_push_char(tty_t *tty, char c) {
 int tty_read(tty_t *tty, char *buf, int size) {
   int i = 0;
   while (i < size) {
-    //while (tty->buff.head == tty->buff.tail); // Bloquei enquanto o buffer estiver vazio
-    keyboard_read();
+    while (tty->buff.head == tty->buff.tail); // Bloquei enquanto o buffer estiver vazio
     if (tty->buff.head == tty->buff.tail) return 0;
     buf[i++] = tty->buff.buffer[tty->buff.tail];
     tty->buff.tail = (tty->buff.tail + 1) % TTY_BUFFER_SIZE;

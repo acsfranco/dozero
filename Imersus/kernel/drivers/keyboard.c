@@ -2,7 +2,7 @@
 #include "../tty/tty.h" //////////////////////////// tinha colocado kernel/tty/tty.h
 #define KB_BUFFER_SIZE 256
 
-#include "../lib/include/kstdlib.h" ////// PARA TESTE
+#include "../lib/include/kstdio.h" ////// PARA TESTE
 
 keyboard_t keyboard; /////////////////////////// Estava keyboart_t
 void *kbctx;
@@ -107,8 +107,7 @@ void keyboard_read() {
 }
 
 void keyboard_handle() {
-  inb(KEYBOARD_DATA_PORT);
-  kprintf("\ntecla pressionada\n");
+  keyboard_read();
 }
 
 void keyboard_init(void *ctx) {
